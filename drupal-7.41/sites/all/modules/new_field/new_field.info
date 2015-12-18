@@ -1,0 +1,15 @@
+name = New field
+description = multiple fiald
+core = 7.x
+package = Features
+version = 7.x-1.0
+dependencies[] = features
+dependencies[] = flickr_config
+dependencies[] = flickr_pics
+dependencies[] = menu
+features[features_api][] = api:2
+features[field_base][] = field_date_and_tags
+features[field_instance][] = node-flickr_content_type-field_date_and_tags
+features[menu_links][] = navigation_flickr-config:flickr_config_page
+features[menu_links][] = navigation_flickr-content-type:node/add/flickr-content-type
+features[node][] = flickr_content_type

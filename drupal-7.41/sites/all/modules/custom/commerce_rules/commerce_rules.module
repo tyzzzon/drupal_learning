@@ -1,0 +1,119 @@
+<?php
+/**
+* implementation of hook_rules_condition_info()
+*/
+
+function commerce_rules_rules_condition_info() {
+  return array(
+    'commerce_rules_check_if_coupon_isnt_alone' => array(
+      'label' => t('Check if coupon isnt alone'),
+      'parameter' => array(
+        'commerce_order' => array(
+          'type' => 'commerce_order',
+          'label' => t('Order'),
+          'wrapped' => TRUE,
+        ),
+      ),
+      'module' => 'commerce_rules',
+    ),
+    'commerce_rules_is_there_are_any_unique_coupons' => array(
+      'label' => t('Is there are any unique coupons'),
+      'parameter' => array(
+        'commerce_coupon' => array(
+          'type' => 'commerce_coupon',
+          'label' => t('Coupon'),
+          'wrapped' => TRUE,
+        ),
+        'commerce_order' => array(
+          'type' => 'commerce_order',
+          'label' => t('Order'),
+          'wrapped' => TRUE,
+        ),
+      ),
+      'module' => 'commerce_rules',
+    ),
+  );
+}
+
+/**
+ * Condition is_there_are_any_unique_coupons
+ */
+function commerce_rules_is_there_are_any_unique_coupons($commerce_coupon, $commerce_order) {
+  $coupons = $commerce_order->commerce_coupons->value();
+  $present_coupon = $commerce_coupon->value();
+  foreach ($coupons as $coupon) {
+    if ($coupon->field_unique['und'][0]['value'] == 1 && $coupon !== $present_coupon) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Condition check_if_coupon_isnt_alone
+ */
+function commerce_rules_check_if_coupon_isnt_alone($commerce_order) {
+  $count = count($commerce_order->commerce_coupons);
+  return ($count === 1) ? false : true;
+}
+
+/**
+ * Implements hook_rules_action_info() on behalf of the user module.
+ */
+function commerce_rules_rules_action_info() {
+  return array(
+    'commerce_rules_action_delete_last_coupon' => array(
+      'label' => t('Delete last coupon'),
+      'parameter' => array(
+        'commerce_coupon' => array(
+          'type' => 'commerce_coupon',
+          'label' => t('Coupon'),
+          'wrapped' => TRUE,
+        ),
+        'commerce_order' => array(
+          'type' => 'commerce_order',
+          'label' => t('Order'),
+          'wrapped' => TRUE,
+        ),
+      ),
+      'module' => 'commerce_rules',
+    ),
+    'commerce_rules_recalculate_total_price' => array(
+      'label' => t('Recalculate total price'),
+      'parameter' => array(
+        'commerce_order' => array(
+          'type' => 'commerce_order',
+          'label' => t('Order'),
+          'wrapped' => TRUE,
+        ),
+      ),
+      'module' => 'commerce_rules',
+    )
+  );
+}
+
+/**
+ * Condition packages_condition_packagetype
+ *
+ */
+function commerce_rules_action_delete_last_coupon($commerce_coupon, $commerce_order) {
+  $coupon = $commerce_coupon->value();
+  $order = $commerce_order->value();
+  commerce_coupon_remove_coupon_from_order($order, $coupon);
+}
+
+
+function commerce_rules_recalculate_total_price($commerce_order) {
+  $order = $commerce_order->value();
+  $o = commerce_order_load($order->order_id);
+  $items = field_get_items('commerce_order', $o, 'commerce_line_items');
+  $end = end ($items);
+  $li_id = $end['line_item_id'];
+  $l = commerce_line_item_load($li_id);
+  dpm($l);
+  $l->quantity++;
+  commerce_line_item_save($l);
+//  $l = commerce_line_item_load($li_id);
+//  dpm($l->commerce_unit_price['und'][0]['data']['components'][1]['price']);
+  commerce_order_calculate_total($order);
+}

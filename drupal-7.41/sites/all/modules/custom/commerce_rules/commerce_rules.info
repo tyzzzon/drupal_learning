@@ -1,0 +1,5 @@
+; &Id:$
+name = Commerce Rules
+description = Custom rules event in Drupal 7
+core = 7.x
+version = 7.x-dev
