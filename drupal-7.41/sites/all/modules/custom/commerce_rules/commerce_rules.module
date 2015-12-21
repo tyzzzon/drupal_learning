@@ -93,8 +93,7 @@ function commerce_rules_rules_action_info() {
 }
 
 /**
- * Condition packages_condition_packagetype
- *
+ * Action Delete last coupon
  */
 function commerce_rules_action_delete_last_coupon($commerce_coupon, $commerce_order) {
   $coupon = $commerce_coupon->value();
@@ -105,15 +104,19 @@ function commerce_rules_action_delete_last_coupon($commerce_coupon, $commerce_or
 
 function commerce_rules_recalculate_total_price($commerce_order) {
   $order = $commerce_order->value();
-  $o = commerce_order_load($order->order_id);
-  $items = field_get_items('commerce_order', $o, 'commerce_line_items');
+  $items = field_get_items('commerce_order', $order, 'commerce_line_items');
   $end = end ($items);
   $li_id = $end['line_item_id'];
   $l = commerce_line_item_load($li_id);
   dpm($l);
   $l->quantity++;
+//  $line_item_wrapper = entity_metadata_wrapper('line_item', $l);
   commerce_line_item_save($l);
+//  $line_item_wrapper->save();
 //  $l = commerce_line_item_load($li_id);
 //  dpm($l->commerce_unit_price['und'][0]['data']['components'][1]['price']);
   commerce_order_calculate_total($order);
+
+  commerce_order_save($order);
+//  entity_get_controller('commerce_line_item')->resetCache(array($l->line_item_id));
 }
