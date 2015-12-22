@@ -760,7 +760,6 @@ function commerce_discount_fixed_amount(EntityDrupalWrapper $wrapper, $discount_
       // Update the total order price, for the next rules condition (if any).
       commerce_order_calculate_total($order);
       break;
-
     case 'commerce_line_item':
       // Check whether this discount was already added as a price component.
       $price_data = $wrapper->commerce_unit_price->data->value();
