@@ -32,6 +32,17 @@ function commerce_rules_rules_condition_info() {
       ),
       'module' => 'commerce_rules',
     ),
+    'commerce_rules_is_coupon_used_by_specific_user' => array(
+      'label' => t('Did user used coupon'),
+      'parameter' => array(
+        'commerce_coupon' => array(
+          'type' => 'commerce_coupon',
+          'label' => t('Coupon'),
+          'wrapped' => TRUE,
+        ),
+      ),
+      'module' => 'commerce_rules',
+    )
   );
 }
 
@@ -88,7 +99,7 @@ function commerce_rules_rules_action_info() {
         ),
       ),
       'module' => 'commerce_rules',
-    )
+    ),
   );
 }
 
@@ -113,4 +124,25 @@ function commerce_rules_recalculate_total_price($commerce_order) {
   commerce_line_item_save($l);
   commerce_order_calculate_total($order);
   commerce_order_save($order);
+}
+
+/**
+ * Condition if user used coupon
+ */
+function commerce_rules_is_coupon_used_by_specific_user($commerce_coupon) {
+  global $user;
+  $uid = $user->uid;
+  $coupon_id = $commerce_coupon->value()->coupon_id;
+  $usage_by_user = db_select('commerce_coupon_usage_transaction', 'c')
+    ->fields('c')
+    ->condition('coupon_id', $coupon_id)
+    ->condition('uid', $uid)
+    ->execute()
+    ->rowCount();
+  if ($usage_by_user >= 1) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }
